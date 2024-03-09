@@ -39,12 +39,16 @@ jobs:
 
       - name: Tag & Build the Docker image
         run: |
-          docker build -t atanubiswas/tetris:$(echo $GITHUB_SHA | cut -c1-7) .
-          docker tag atanubiswas/tetris:$(echo $GITHUB_SHA | cut -c1-7) atanubiswas/tetris:latest
+          # Increment version based on existing tags
+          last_version=$(docker image ls atanubiswas/tetris:latest --format "{{.Tag}}" | awk -F. '{print $2}')
+          next_version=$((last_version + 1))
 
+          # Build the Docker image
+          docker build -t atanubiswas/tetris:latest -t atanubiswas/tetris:${next_version} .
 
       - name: Push the Docker image
         run: |
-          docker push atanubiswas/tetris:$(echo $GITHUB_SHA | cut -c1-7)
+          docker push atanubiswas/tetris:latest
+          docker push atanubiswas/tetris:${next_version}
         env:
           DOCKER_CLI_ACI: true

@@ -39,15 +39,10 @@ jobs:
 
       - name: Tag & Build the Docker image
         run: |
-          last_version=$(docker image ls atanubiswas/tetris:latest --format "{{.Tag}}" | awk -F. '{print $2}')
-          echo "::set-output name=last_version::$last_version"
-
-          # Build the Docker image
-          docker build -t atanubiswas/tetris:latest -t atanubiswas/tetris:${{ steps.version.outputs.next_version }} .
-
+          docker build -t tetris .
+          docker tag tetris atanubiswas/tetris:latest
       - name: Push the Docker image
         run: |
           docker push atanubiswas/tetris:latest
-          docker push atanubiswas/tetris:${{ steps.version.outputs.next_version }}
         env:
           DOCKER_CLI_ACI: true

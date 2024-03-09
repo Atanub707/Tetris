@@ -1,24 +1,48 @@
-name: Echo Message and Slack Notification
+name: Build
 
 on:
   push:
     branches:
       - main
 
+
 jobs:
-  echo-and-notify:
+  build:
+    name: Build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Echo a Message
-        run: echo "Hello from GitHub Actions!"
-
-      - name: Send a Slack Notification
-        if: always()
-        uses: act10ns/slack@v1
+      - uses: actions/checkout@v2
         with:
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-          channel: '#git'
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: sonarsource/sonarqube-scan-action@master
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      # If you wish to fail your job when the Quality Gate is red, uncomment the
+      # following lines. This would typically be used to fail a deployment.
+      # - uses: sonarsource/sonarqube-quality-gate-action@master
+      #   timeout-minutes: 5
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: install trivy
+        run: |
+          #install trivy
+          sudo apt-get install wget apt-transport-https gnupg lsb-release -y
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy -y
+          #command to scan files
+          trivy fs .
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERhub_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Tag & Build the Docker image
+        run: |
+          docker build -t atanubiswas/netflix:$(echo $GITHUB_SHA | cut -c1-7) .
+          docker tag atanubiswas/netflix:$(echo $GITHUB_SHA | cut -c1-7) atanubiswas/netflix:latest
+
+      - name: Push the Docker image
+        run: docker push atanubiswas/netflix:$(echo $GITHUB_SHA | cut -c1-7)
+        env:
+          DOCKER_CLI_ACI: true

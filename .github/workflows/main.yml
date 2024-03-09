@@ -42,7 +42,7 @@ jobs:
           last_version=$(docker image ls atanubiswas/tetris:latest --format "{{.Tag}}" | awk -F. '{print $2}')
           echo "::set-output name=last_version::$last_version"
 
-        # Build the Docker image
+          # Build the Docker image
           docker build -t atanubiswas/tetris:latest -t atanubiswas/tetris:${{ steps.version.outputs.next_version }} .
 
       - name: Push the Docker image

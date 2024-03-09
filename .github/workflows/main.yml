@@ -44,7 +44,7 @@ jobs:
           echo "::set-output name=next_version::$next_version"
 
           # Build the Docker image
-          docker build -t atanubiswas/tetris:latest -t atanubiswas/tetris:${{ steps.version.outputs.next_version }} .
+          docker build -t atanubiswas/tetris:${{ steps.version.outputs.next_version }} .
 
       - name: Push the Docker image
         run: |

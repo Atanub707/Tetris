@@ -39,10 +39,10 @@ jobs:
 
       - name: Tag & Build the Docker image
         run: |
-          docker build -t atanubiswas/tetris:$(echo $GITHUB_SHA | cut -c1-7) .
-          docker tag atanubiswas/tetris:$(echo $GITHUB_SHA | cut -c1-7) atanubiswas/tetris:latest
+          docker build -t atanubiswas/tetris .
+          docker tag atanubiswas/tetris:latest
 
       - name: Push the Docker image
-        run: docker push atanubiswas/tetris:$(echo $GITHUB_SHA | cut -c1-7)
+        run: docker push atanubiswas/tetris:latest
         env:
           DOCKER_CLI_ACI: true

@@ -60,8 +60,8 @@ jobs:
           docker build -t atanubiswas/tetris:$VERSION .
 
           # Tag the Docker image with the latest version
-          docker tag your/image-name:$VERSION atanubiswas/tetris:latest
+          docker tag your/image-name:$VERSION atanubiswas/tetris:1.0.1
 
           # Push the Docker images to the registry
           docker push atanubiswas/tetris:$VERSION
-          docker push atanubiswas/tetris:latest
+          docker push atanubiswas/tetris:1.0.1

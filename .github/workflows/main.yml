@@ -37,16 +37,31 @@ jobs:
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Tag & Build the Docker image
+      - name: Determine version number
+        id: version
         run: |
-          # Generate version number based on commit count
-          VERSION=$(git rev-list --count HEAD)
-          docker build -t atanubiswas/tetris:$VERSION .
-          docker tag tetris atanubiswas/tetris:$VERSION atanubiswas/tetris:latest
+          VERSION=$(git describe --tags --abbrev=0) # Get the latest version tag
+          VERSION=${VERSION:-0.0.0} # Default to 0.0.0 if no tags found
+          IFS='.' read -r major minor patch <<< "$VERSION"
+          echo "Version $VERSION"
 
-      - name: Push the Docker image
+          # Increment patch version
+          patch=$((patch+1))
+          NEW_VERSION="$major.$minor.$patch"
+          echo "::set-output name=new_version::$NEW_VERSION"
+
+      - name: Build and tag Docker image
         run: |
+          # Retrieve the new version from the previous step
+          VERSION=$GITHUB_REF_SLUG
+          echo "Building version $VERSION"
+
+          # Build the Docker image
+          docker build -t atanubiswas/tetris:$VERSION .
+
+          # Tag the Docker image with the latest version
+          docker tag your/image-name:$VERSION atanubiswas/tetris:latest
+
+          # Push the Docker images to the registry
           docker push atanubiswas/tetris:$VERSION
           docker push atanubiswas/tetris:latest
-        env:
-          DOCKER_CLI_ACI: true

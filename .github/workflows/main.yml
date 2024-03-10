@@ -39,10 +39,14 @@ jobs:
 
       - name: Tag & Build the Docker image
         run: |
-          docker build -t tetris .
-          docker tag tetris atanubiswas/tetris:latest
+          # Generate version number based on commit count
+          VERSION=$(git rev-list --count HEAD)
+          docker build -t atanubiswas/tetris:$VERSION .
+          docker tag tetris atanubiswas/tetris:$VERSION atanubiswas/tetris:latest
+
       - name: Push the Docker image
         run: |
+          docker push atanubiswas/tetris:$VERSION
           docker push atanubiswas/tetris:latest
         env:
           DOCKER_CLI_ACI: true
